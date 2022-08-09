@@ -14,6 +14,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/cralji/Deep_Krein_RF.git",
     license='MIT',
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     install_requires=[]
 )
