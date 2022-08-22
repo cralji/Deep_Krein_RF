@@ -2,6 +2,7 @@ import numpy as np
 from tensorflow.keras.regularizers import Regularizer
 from tensorflow.keras.initializers import RandomNormal
 from tensorflow.keras.layers import Layer
+from tensorflow.keras.constraints import Constraint
 import tensorflow as tf
 
 class Orthogonal(Regularizer):
@@ -19,6 +20,16 @@ class Orthogonal(Regularizer):
   def get_config(self):
     mdict = {'l_o': self.l_o}
     return mdict
+
+class SumUnit(Constraint):
+	def __init__(self,**kwargs):
+		super(SumUnit,self).__init__(**kwargs)
+	def __call__(self,w):
+		den = tf.reduce_sum(w)
+		return w/den
+	def get_config(self):
+		return {}
+
 
 # Krein Layers
 # @tf.keras.utils.register_keras_serializable(package='Custom',name = 'Krein_mapping')
@@ -70,12 +81,18 @@ class Krein_mapping(Layer):
         initializer=tf.constant_initializer(self.scale2),
         trainable = self.trainable_scale,
         constraint='NonNeg')
+    self.masses = self.add_weight(name = 'masses',
+                                  shape = (2,),
+                                  dtype = tf.float32,
+                                  initializer = tf.constant_initializer(0.5),
+                                  trainable = self.trainable_scale,
+                                  constraint = SumUnit())
     super(Krein_mapping,self).build(input_shape)
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
-    outputs1 = tf.matmul(a=inputs, b=kernel1)
-    outputs2 = tf.matmul(a=inputs, b=kernel2)
+    outputs1 = self.masses[0]*tf.matmul(a=inputs, b=kernel1)
+    outputs2 = self.masses[1]*tf.matmul(a=inputs, b=kernel2)
     return tf.math.subtract(tf.cos(outputs1),tf.cos(outputs2))
 
   def compute_output_shape(self, batch_input_shape):
