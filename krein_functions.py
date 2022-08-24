@@ -3,6 +3,7 @@ from tensorflow.keras.regularizers import Regularizer
 from tensorflow.keras.initializers import RandomNormal
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
+from tensorflow.linalg import qr
 import tensorflow as tf
 
 class Orthogonal(Regularizer):
@@ -30,7 +31,7 @@ class SumUnit(Constraint):
 	def get_config(self):
 		return {}
 
-
+            
 # Krein Layers
 # @tf.keras.utils.register_keras_serializable(package='Custom',name = 'Krein_mapping')
 class Krein_mapping(Layer):
@@ -109,3 +110,4 @@ class Krein_mapping(Layer):
              }
     base_config.update(mdict)
     return base_config
+# %%

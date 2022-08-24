@@ -1,6 +1,7 @@
-from Deep_Krein_RF.krein_functions import Orthogonal,Krein_mapping
+from Deep_Krein_RF.krein_functions import Krein_mapping
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.regularizers import OrthogonalRegularizer
 
 
 def create_model_KreinMapping(h,
@@ -19,7 +20,7 @@ def create_model_KreinMapping(h,
 
     x = Krein_mapping(out_dim = h[1],
                       scale = scale,
-                      kernel_regularizer=Orthogonal(l_o=l_o),
+                      kernel_regularizer=OrthogonalRegularizer(factor=l_o,mode = 'columns'),
                       trainable_scale=trainable_scale) (x) 
 
     out = layers.Dense(num_classes,
