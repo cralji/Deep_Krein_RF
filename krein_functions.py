@@ -97,14 +97,14 @@ class Krein_mapping(Layer):
   def call(self,inputs):
     W_p = self.kernel[:,:self.out_dim]
     W_n = self.kernel[:,self.out_dim:]
-    masses_p = Compute_masses(W_p)
-    masses_n = Compute_masses(W_n)
-
+    kernel1 = (1.0 / self.kernel_scale1) * W_p
+    kernel2 = (1.0 / self.kernel_scale2) * W_n
+    masses_p = Compute_masses(kernel1)
+    masses_n = Compute_masses(kernel2)
+    tf.print(masses_p,masses_n)
     masses = masses_p + masses_n
     self.masses_p = masses_p/masses
     self.masses_n = masses_n/masses
-    kernel1 = (1.0 / self.kernel_scale1) * W_p
-    kernel2 = (1.0 / self.kernel_scale2) * W_n
     outputs1 = tf.matmul(a=inputs, b=kernel1)
     outputs2 = tf.matmul(a=inputs, b=kernel2)
     return tf.math.subtract(self.masses_p*tf.cos(outputs1),self.masses_n*tf.cos(outputs2))
