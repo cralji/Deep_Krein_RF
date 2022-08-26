@@ -6,6 +6,9 @@ from tensorflow.keras.constraints import Constraint
 from tensorflow.linalg import qr
 import tensorflow as tf
 
+from tensorflow_probability import math as tfmath
+from tensorflow_probability import stats as tfstats
+
 class Orthogonal(Regularizer):
   def __init__(self,
                l_o = 1e-2):
@@ -31,7 +34,13 @@ class SumUnit(Constraint):
 	def get_config(self):
 		return {}
 
-            
+def Compute_masses(W,bins = 10):
+  norm_W = tf.linalg.norm(W,axis=0)
+  edges = tf.linspace(tf.reduce_min(norm_W),tf.reduce_max(norm_W),bins)
+  freq = tfstats.histogram(norm_W,edges=edges)
+  return tfmath.trapz(freq/tf.reduce_sum(freq),edges[:-1])
+
+
 # Krein Layers
 # @tf.keras.utils.register_keras_serializable(package='Custom',name = 'Krein_mapping')
 class Krein_mapping(Layer):
@@ -82,19 +91,23 @@ class Krein_mapping(Layer):
         initializer=tf.constant_initializer(self.scale2),
         trainable = self.trainable_scale,
         constraint='NonNeg')
-    self.masses = self.add_weight(name = 'masses',
-                                  shape = (2,),
-                                  dtype = tf.float32,
-                                  initializer = tf.constant_initializer(0.5),
-                                  trainable = self.trainable_scale,
-                                  constraint = SumUnit())
+    self.masses_p = tf.random.uniform(())
+    self.masses_n = tf.random.uniform(())  
     super(Krein_mapping,self).build(input_shape)
   def call(self,inputs):
-    kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
-    kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
-    outputs1 = self.masses[0]*tf.matmul(a=inputs, b=kernel1)
-    outputs2 = self.masses[1]*tf.matmul(a=inputs, b=kernel2)
-    return tf.math.subtract(tf.cos(outputs1),tf.cos(outputs2))
+    W_p = self.kernel[:,:self.out_dim]
+    W_n = self.kernel[:,self.out_dim:]
+    masses_p = Compute_masses(W_p)
+    masses_n = Compute_masses(W_n)
+
+    masses = masses_p + masses_n
+    self.masses_p = masses_p/masses
+    self.masses_n = masses_n/masses
+    kernel1 = (1.0 / self.kernel_scale1) * W_p
+    kernel2 = (1.0 / self.kernel_scale2) * W_n
+    outputs1 = tf.matmul(a=inputs, b=kernel1)
+    outputs2 = tf.matmul(a=inputs, b=kernel2)
+    return tf.math.subtract(self.masses_p*tf.cos(outputs1),self.masses_n*tf.cos(outputs2))
 
   def compute_output_shape(self, batch_input_shape):
     return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.out_dim*2])
