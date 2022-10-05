@@ -1,4 +1,4 @@
-from Deep_Krein_RF.krein_functions import Krein_mapping
+from krein_functions import Krein_mapping #Deep_Krein_RF.krein_functions import Krein_mapping
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.regularizers import OrthogonalRegularizer
@@ -37,37 +37,25 @@ def create_model_HybridNN(h,
                           num_classes=2,
                           input_shape = (2,),
                           trainable_scale = True):
-    model = keras.Sequential()  
-    model.add(layers.InputLayer(input_shape=input_shape))
-    model.add( layers.Dense(h[0],
+    
+    input = keras.Input(input_shape)
+    x = layers.Dense(h[0],
                             name = 'h1',
                             kernel_regularizer = keras.regularizers.l2(gamma)
-                            )
-       )
-    model.add(RandomFourierFeatures(output_dim=h[1],
+                            ) (input)
+       
+    x = RandomFourierFeatures(output_dim=h[1],
                                     scale=scale,
                                     trainable = trainable_scale,
                                     name = 'h2'
-                                    )
-              )
-    if len(h) == 4:
-      model.add( layers.Dense(h[2],
-                              name = 'h3',
-                              kernel_regularizer = keras.regularizers.l2(gamma)
-                              )
-        )
-      model.add(RandomFourierFeatures(output_dim=h[3],
-                                      scale=scale,
-                                      trainable = trainable_scale,
-                                      name = 'h4'
-                                      )
-                )    
-    model.add(layers.Dense(num_classes,
+                                    ) (x)
+    
+    out = layers.Dense(num_classes,
                           name = 'out',
                           activation = 'softmax',
                           kernel_regularizer =  keras.regularizers.l2(gamma)
-                          )
-              )
+                          )(x)
+    model = keras.Model(inputs = input,outputs =  out)          
     return model
 
 #%% random Fourier features Tensorflow implemented
