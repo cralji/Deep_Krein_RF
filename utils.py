@@ -58,6 +58,44 @@ def create_model_HybridNN(h,
     model = keras.Model(inputs = input,outputs =  out)          
     return model
 
+
+def createANN(h,
+              gamma = 1e-4,
+              num_classes=2,
+              input_shape = (2,)):
+    
+    input = keras.Input(input_shape)
+    if (type(h)!=float) and (type(h)!=int):
+          
+          
+          
+          
+          x = layers.Dense(h[0],
+                              name = 'h1',
+                              kernel_regularizer = keras.regularizers.l2(gamma)
+                              ) (input)
+          if len(h)>1:
+                x = layers.Dense(h[1],
+                          name = 'h2',
+                          kernel_regularizer = keras.regularizers.l2(gamma)
+                          ) (x)
+            
+    else:
+          x = layers.Dense(h,
+                      name = 'h1',
+                      kernel_regularizer = keras.regularizers.l2(gamma)
+                      ) (input)
+      
+      
+    out = layers.Dense(num_classes,
+                          name = 'out',
+                          activation = 'softmax',
+                          kernel_regularizer =  keras.regularizers.l2(gamma)
+                          )(x)
+    model = keras.Model(inputs = input,outputs =  out)          
+    return model
+
+
 #%% random Fourier features Tensorflow implemented
 import tensorflow.compat.v2 as tf
 

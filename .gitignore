@@ -1,4 +1,8 @@
 Script.py
 __pycache__/*
 Datasets_/*
-models/*
+pipe_data/*
+pipe_data_pc/*
+results/*
+results_ANN_2layers/*
+imgs/*
