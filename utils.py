@@ -1,4 +1,4 @@
-from krein_functions import Krein_mapping #Deep_Krein_RF.krein_functions import Krein_mapping
+from Deep_Krein_RF.krein_functions import Krein_mapping
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.regularizers import OrthogonalRegularizer
