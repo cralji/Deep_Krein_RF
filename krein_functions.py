@@ -94,7 +94,7 @@ class Krein_mapping(Layer):
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
     outputs1 = tf.matmul(a=inputs, b=kernel1)
     outputs2 = tf.matmul(a=inputs, b=kernel2)
-    return tf.math.subtract(tf.cos(outputs1),tf.cos(outputs2))
+    return tf.math.add(tf.cos(outputs1),tf.cos(outputs2))
 
   def compute_output_shape(self, batch_input_shape):
     return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.out_dim*2])
