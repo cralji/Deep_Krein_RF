@@ -67,7 +67,7 @@ class Krein_mapping(Layer):
                                          int(self.out_dim*2)],
                                   regularizer = self.kernel_regularizer,
                                   initializer = RandomNormal(stddev=1.0),
-                                  trainable=False)
+                                  trainable = True)
     self.kernel_scale1 = self.add_weight(
         name='kernel_scale1',
         shape=(1,),
@@ -82,12 +82,12 @@ class Krein_mapping(Layer):
         initializer=tf.constant_initializer(self.scale2),
         trainable = self.trainable_scale,
         constraint='NonNeg')
-    self.masses = self.add_weight(name = 'masses',
-                                  shape = (2,),
-                                  dtype = tf.float32,
-                                  initializer = tf.constant_initializer(0.5),
-                                  trainable = self.trainable_scale,
-                                  constraint = SumUnit())
+    # self.masses = self.add_weight(name = 'masses',
+    #                               shape = (2,),
+    #                               dtype = tf.float32,
+    #                               initializer = tf.constant_initializer(0.5),
+    #                               trainable = self.trainable_scale,
+    #                               constraint = SumUnit())
     super(Krein_mapping,self).build(input_shape)
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
