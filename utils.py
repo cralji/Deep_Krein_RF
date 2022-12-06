@@ -1,11 +1,13 @@
-from Deep_Krein_RF.krein_functions import Krein_mapping
+from krein_functions import Krein_mapping
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.regularizers import OrthogonalRegularizer
 
 
-def create_model_KreinMapping(h,
-                          scale = None,
+def create_model_KreinMapping(h1,
+                          h2,
+                          scale1 = None,
+                          scale2 = None,
                           gamma = 1e-4,
                           l_o = 1e-2,
                           num_classes=2,
@@ -13,12 +15,18 @@ def create_model_KreinMapping(h,
                           trainable_scale = True):  
     
     input = keras.Input(input_shape)
-    x = layers.Dense(h[0],
+    x = layers.Dense(h1,
                 name = 'h1',
                 kernel_regularizer = keras.regularizers.l1_l2(gamma,gamma)
                 ) (input)
-
-    x = Krein_mapping(out_dim = h[1],
+    x = layers.BatchNormalization()(x)
+    if scale1 is None or scale2 is None:
+      scale = None
+    elif scale1==scale2:
+      scale = (scale1,scale2+1e-6)
+    else:
+      scale = (scale1,scale2)
+    x = Krein_mapping(out_dim = h2,
                       scale = scale,
                       kernel_regularizer=OrthogonalRegularizer(factor=l_o,mode = 'columns'),
                       trainable_scale=trainable_scale) (x) 

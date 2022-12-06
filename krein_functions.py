@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
 from tensorflow.linalg import qr
 import tensorflow as tf
+import tensorflow_probability as tfp
 
 class Orthogonal(Regularizer):
   def __init__(self,
@@ -47,7 +48,11 @@ class Krein_mapping(Layer):
     self.scale = scale
     self.kernel_regularizer = kernel_regularizer
     self.trainable_scale = trainable_scale
-
+  
+  def compute_normal_probaility(self,x,mean,std):
+    constant = 1/(tf.math.sqrt(2*np.pi)*std)
+    return constant*tf.math.exp(-0.5*(x-mean)*(x-mean)/(std*std))
+  
   def build(self,input_shape):
     input_dim = input_shape[-1]
     if self.scale is None:
@@ -92,9 +97,31 @@ class Krein_mapping(Layer):
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
+    ## Compute masses
+    ww = tf.linalg.norm(self.kernel,axis=0)
+    ww_pos = tf.sort(ww[:self.out_dim])
+    ww_neg = tf.sort(ww[self.out_dim:])
+    mean_pos = tf.reduce_mean(ww_pos)
+    mean_neg = tf.reduce_mean(ww_neg)
+    std_pos = tf.math.reduce_std(ww_pos)
+    std_neg = tf.math.reduce_std(ww_neg)
+
+    mass_pos = self.compute_normal_probaility(ww_pos,mean_pos,std_pos)
+    mass_neg = self.compute_normal_probaility(ww_neg,mean_neg,std_neg)
+
+
+    mass_pos = tf.sqrt(tfp.math.trapz(tf.abs(mass_pos),ww_pos))
+    mass_neg = tf.sqrt(tfp.math.trapz(tf.abs(mass_neg),ww_neg))
+
+    total_mass = mass_pos + mass_neg
+    mass_pos = mass_pos/total_mass  
+    mass_neg = mass_neg/total_mass
+
+    ##Compute ouputs
     outputs1 = tf.matmul(a=inputs, b=kernel1)
     outputs2 = tf.matmul(a=inputs, b=kernel2)
-    return tf.math.add(tf.cos(outputs1),tf.cos(outputs2))
+    norm_constant = tf.sqrt(tf.cast(tf.shape(kernel1)[1],kernel1.dtype))
+    return tf.math.add(mass_pos*tf.cos(outputs1),mass_neg*tf.cos(outputs2))/norm_constant
 
   def compute_output_shape(self, batch_input_shape):
     return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.out_dim*2])
