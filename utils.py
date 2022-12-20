@@ -1,6 +1,7 @@
 from krein_functions import Krein_mapping
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.losses import Loss
 from tensorflow.keras.regularizers import OrthogonalRegularizer
 
 
@@ -339,3 +340,49 @@ def _get_default_scale(initializer, input_dim):
       initializer.lower() == 'gaussian'):
     return np.sqrt(input_dim / 2.0)
   return 1.0
+
+# GCCE_MA_loss
+class GCCE_MA_loss(Loss):
+  def __init__(self,
+               q=0.1,
+               K=2,
+               **kwargs):
+    self.K = K
+    self.q = q
+    super().__init__(**kwargs)
+    
+  def call(self, y_true, y_pred):
+    # print(y_true,y_pred)
+    # q = 0.1
+    # pred = y_pred[:, self.R:]
+    # pred = tf.clip_by_value(pred, clip_value_min=1e-9, clip_value_max=1)
+    # ann_ = y_pred[:, :self.R]
+    # # ann_ = tf.clip_by_value(ann_, clip_value_min=1e-9, clip_value_max=1-1e-9)
+    # Y_true = tf.one_hot(tf.cast(y_true, dtype=tf.int32), depth=self.K, axis=1)
+    # Y_hat = tf.repeat(tf.expand_dims(pred,-1), self.R, axis = -1)
+
+    p_gcce = y_true*(1 - y_pred**self.q)/self.q
+    temp1 = y_pred*p_gcce
+    # temp1 = y_pred*tf.math.reduce_sum(p_gcce, axis=1)
+
+    # p_logreg = tf.math.reduce_prod(tf.math.pow(Y_hat, Y_true), axis=1)
+    # temp1 = ann_*tf.math.log(p_logreg)  
+    # temp2 = (1 - ann_)*tf.math.log(1/K)*tf.reduce_sum(Y_true,axis=1)
+    # aux = tf.repeat(tf.reduce_sum(pred*tf.math.log(pred),axis=1,keepdims=True), R, axis = 1)
+    # tf.print(tf.shape(aux))
+    # print(tf.shape(aux))
+    # temp2 = (1 - ann_)*aux*tf.reduce_sum(Y_true,axis=1)
+    # temp2 = (tf.ones(tf.shape(ann_)) - ann_)*tf.math.log(1/K)
+    # print(tf.reduce_mean(Y_true,axis=1).numpy())
+    # Y_true_1 = tf.clip_by_value(Y_true, clip_value_min=1e-9, clip_value_max=1)
+    # p_logreg_inv = tf.math.reduce_prod(tf.math.pow(Y_true_1, Y_hat), axis=1)
+    # temp2 = (1 - ann_)*tf.math.log(p_logreg_inv) 
+    temp2 = (1 - y_pred)*(1-(1/self.K)**self.q)/self.q*y_true
+    return tf.math.reduce_sum((temp1 + temp2))
+
+  def get_config(self):
+    base_config = super().get_config()
+    return {**base_config, 
+            "K": self.K,
+            "q": self.q}
+
