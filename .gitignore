@@ -1,4 +1,5 @@
-Script.py
+Scripts*
+Scripts.ipynb
 __pycache__/*
 Datasets_/*
 pipe_data/*
@@ -8,3 +9,5 @@ results_ANN_2layers/*
 imgs/*
 tests.py
 results*
+.ipynb_*
+.vscode*
