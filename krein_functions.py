@@ -42,7 +42,7 @@ class KreinMapping(Layer):
                kernel_regularizer = None,
                trainable_scale = False,
                **kwargs):
-    super(Krein_mapping,self).__init__(**kwargs)
+    super(KreinMapping,self).__init__(**kwargs)
     self.out_dim = out_dim
     self.scale = scale
     self.kernel_regularizer = kernel_regularizer
@@ -88,7 +88,7 @@ class KreinMapping(Layer):
                                   initializer = tf.constant_initializer(0.5),
                                   trainable = self.trainable_scale,
                                   constraint = SumUnit())
-    super(Krein_mapping,self).build(input_shape)
+    super(KreinMapping,self).build(input_shape)
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
