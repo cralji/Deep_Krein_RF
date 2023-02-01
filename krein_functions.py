@@ -34,7 +34,7 @@ class SumUnit(Constraint):
             
 # Krein Layers
 # @tf.keras.utils.register_keras_serializable(package='Custom',name = 'Krein_mapping')
-class Krein_mapping(Layer):
+class KreinMapping(Layer):
 
   def __init__(self, 
                out_dim,
