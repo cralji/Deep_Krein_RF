@@ -1,1 +1,0 @@
-from .cat_vs_dog import CatsVsDogs

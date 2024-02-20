@@ -123,7 +123,17 @@ def sweep_train(config_defaults=None):
     }
     # Initialize wandb with a sample project name
     wandb.init(config=config_defaults)  # this gets over-written in the Sweep
-
+    
+    mdict = {'phi_units':wandb.config.phi_units,
+            'gamma':round(wandb.config.gamma,2),
+             'alpha':round(wandb.config.alpha,2),
+             'rho':round(wandb.config.rho,2),
+             'betha':round(wandb.config.betha,2),
+             'learning_rate':round(wandb.config.learning_rate,4),
+            }
+    name_run = "phi_units_{phi_units}_gamma_{gamma}_alpha_{alpha}_rho_{rho}_betha_{betha}_learning_rate_{learning_rate}".format(**mdict)
+    wandb.run.name = name_run
+    wandb.run.save()
     # Specify the other hyperparameters to the configuration, if any
     # wandb.config.epochs = 100
     # wandb.config.log_step = 20
@@ -143,7 +153,9 @@ def sweep_train(config_defaults=None):
 
     model = krein_rff_unet((input_shape[0],input_shape[1],3),
                             out_channels=2,
-                            phi_units=wandb.config.phi_units
+                            phi_units=wandb.config.phi_units,
+                            trainable=True,
+                            trainable_scale=True,
                             )
     
     loss = dual_focal_loss(gamma = wandb.config.gamma,
@@ -162,10 +174,10 @@ def sweep_train(config_defaults=None):
     
     wandb_callbacks = [
         WandbMetricsLogger(),
-        WandbModelCheckpoint(monitor='val_dice',
-                             filepath="my_model_{epoch:02d}",
-                             save_best_only=True,
-                             mode = 'min'),
+        # WandbModelCheckpoint(monitor='val_dice',
+        #                      filepath="my_model_{epoch:02d}",
+        #                      save_best_only=True,
+        #                      mode = 'min'),
         ReduceLROnPlateau(monitor='val_loss',
                           factor=0.2,
                           patience=5,
@@ -184,7 +196,8 @@ def sweep_train(config_defaults=None):
     dice_metric =  compute_dice_metric(test[1],M_est,targets=targets)
     wandb.log(dice_metric)
 #%%
-sweep_id = wandb.sweep(sweep_config, project="sweeps-tensorflow-dog_and_cat")
+sweep_id = wandb.sweep(sweep_config,
+                       project="sweeps-tensorflow-dog_and_cat_krein_trainable")
 #%%
 wandb.agent(sweep_id, function=sweep_train, count=50)
 # %%
