@@ -1,5 +1,6 @@
+#%%
 import numpy as np
-from tensorflow.keras.regularizers import Regularizer
+from tensorflow.keras.regularizers import Regularizer,OrthogonalRegularizer
 from tensorflow.keras.initializers import RandomNormal
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
@@ -31,9 +32,7 @@ class SumUnit(Constraint):
 	def get_config(self):
 		return {}
 
-            
-# Krein Layers
-# @tf.keras.utils.register_keras_serializable(package='Custom',name = 'Krein_mapping')
+#%% Krein Layers
 class KreinMapping(Layer):
 
   def __init__(self, 
@@ -41,12 +40,14 @@ class KreinMapping(Layer):
                scale = None,
                kernel_regularizer = None,
                trainable_scale = False,
+               trainable = False,
                **kwargs):
     super(KreinMapping,self).__init__(**kwargs)
     self.out_dim = out_dim
     self.scale = scale
     self.kernel_regularizer = kernel_regularizer
     self.trainable_scale = trainable_scale
+    self.trainable = trainable
 
   def build(self,input_shape):
     input_dim = input_shape[-1]
@@ -62,12 +63,14 @@ class KreinMapping(Layer):
         self.scale2 = np.sqrt(input_dim / 2.0)
     else:
       raise ValueError('scale para')
+    if self.kernel_regularizer is None:
+      self.kernel_regularizer = OrthogonalRegularizer(factor = 0.01,mode = 'columns')
     self.kernel = self.add_weight("kernel",
                                   shape=[int(input_shape[-1]),
                                          int(self.out_dim*2)],
                                   regularizer = self.kernel_regularizer,
                                   initializer = RandomNormal(stddev=1.0),
-                                  trainable=False)
+                                  trainable = self.trainable)
     self.kernel_scale1 = self.add_weight(
         name='kernel_scale1',
         shape=(1,),
@@ -94,7 +97,7 @@ class KreinMapping(Layer):
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
     outputs1 = tf.matmul(a=inputs, b=kernel1)
     outputs2 = tf.matmul(a=inputs, b=kernel2)
-    return tf.math.add(tf.cos(outputs1),tf.cos(outputs2))
+    return tf.math.add(self.masses[0]*tf.cos(outputs1),tf.cos(outputs2))
 
   def compute_output_shape(self, batch_input_shape):
     return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.out_dim*2])
