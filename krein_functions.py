@@ -85,19 +85,20 @@ class KreinMapping(Layer):
         initializer=tf.constant_initializer(self.scale2),
         trainable = self.trainable_scale,
         constraint='NonNeg')
-    self.masses = self.add_weight(name = 'masses',
-                                  shape = (2,),
-                                  dtype = tf.float32,
-                                  initializer = tf.constant_initializer(0.5),
-                                  trainable = self.trainable_scale,
-                                  constraint = SumUnit())
+    # self.masses = self.add_weight(name = 'masses',
+    #                               shape = (2,),
+    #                               dtype = tf.float32,
+    #                               initializer = tf.constant_initializer(0.5),
+    #                               trainable = self.trainable_scale,
+    #                               constraint = SumUnit())
     super(KreinMapping,self).build(input_shape)
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
     outputs1 = tf.matmul(a=inputs, b=kernel1)
     outputs2 = tf.matmul(a=inputs, b=kernel2)
-    return tf.math.subtract(self.masses[0]*tf.cos(outputs1),self.masses[1]*tf.cos(outputs2))
+    # return tf.math.subtract(self.masses[0]*tf.cos(outputs1),self.masses[1]*tf.cos(outputs2))
+    return tf.math.subtract(tf.cos(outputs1),tf.cos(outputs2))
     
 
   def compute_output_shape(self, batch_input_shape):
