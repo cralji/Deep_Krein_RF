@@ -66,9 +66,10 @@ class KreinMapping(Layer):
     else:
       raise ValueError('scale para')
     if self.kernel_regularizer is None:
-      self.kernel_regularizer = OrthogonalRegularizer(factor = self.factor_reg,
-                                                      mode = 'columns'
-                                                      )
+      # self.kernel_regularizer = OrthogonalRegularizer(factor = self.factor_reg,
+      #                                                 mode = 'columns'
+      #                                                 )
+      self.kernel_regularizer = Orthogonal(l_o=self.factor_reg)
     self.kernel = self.add_weight("kernel",
                                   shape=[int(input_shape[-1]),
                                          int(self.out_dim*2)],
