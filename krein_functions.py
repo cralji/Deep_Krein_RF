@@ -41,6 +41,7 @@ class KreinMapping(Layer):
                kernel_regularizer = None,
                trainable_scale = False,
                trainable = False,
+               factor_reg = 0.01,
                **kwargs):
     super(KreinMapping,self).__init__(**kwargs)
     self.out_dim = out_dim
@@ -48,6 +49,7 @@ class KreinMapping(Layer):
     self.kernel_regularizer = kernel_regularizer
     self.trainable_scale = trainable_scale
     self.trainable = trainable
+    self.factor_reg = factor_reg
 
   def build(self,input_shape):
     input_dim = input_shape[-1]
@@ -64,7 +66,9 @@ class KreinMapping(Layer):
     else:
       raise ValueError('scale para')
     if self.kernel_regularizer is None:
-      self.kernel_regularizer = OrthogonalRegularizer(factor = 0.01,mode = 'columns')
+      self.kernel_regularizer = OrthogonalRegularizer(factor = self.factor_reg,
+                                                      mode = 'rows'
+                                                      )
     self.kernel = self.add_weight("kernel",
                                   shape=[int(input_shape[-1]),
                                          int(self.out_dim*2)],

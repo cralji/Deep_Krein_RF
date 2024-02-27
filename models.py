@@ -110,7 +110,8 @@ def krein_rff_unet(input_shape,
          upsamble_mode = 'simple',
          phi_units = 64,
          trainable = False,
-         trainable_scale = False
+         trainable_scale = False,
+         factor_reg = 0.01
          ):
     NET_SCALING = None
     GAUSSIAN_NOISE = 0.1
@@ -160,8 +161,9 @@ def krein_rff_unet(input_shape,
     # %Bottleneck
     flatten = la.Flatten()(p4)
     rff_krein = KreinMapping(out_dim=int(input_shape[0]/16)*int(input_shape[1]/16)*phi_units,
-                             trainable=trainable,
+                             trainable = trainable,
                              trainable_scale = trainable_scale,
+                             factor_reg = factor_reg,
                              name = 'Krein_phi')(flatten)
     resha = la.Reshape((int(input_shape[0]/16),int(input_shape[1]/16),-1))(rff_krein)
     # %
