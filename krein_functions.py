@@ -8,6 +8,45 @@ from tensorflow_probability import math as tfmath
 
 import tensorflow as tf
 
+#%%
+import numpy as np
+from tensorflow.keras.regularizers import Regularizer,OrthogonalRegularizer
+from tensorflow.keras.initializers import RandomNormal
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.constraints import Constraint
+from tensorflow.linalg import qr
+import tensorflow as tf
+
+
+class Orthogonal(Regularizer):
+  def __init__(self,
+               l_o = 1e-2):
+    self.l_o = l_o
+
+  def __call__(self,x):
+    out_dim = tf.cast(tf.shape(x)[1]/2,tf.int32)
+    E1 = tf.linalg.matmul(x[:,:out_dim],x[:,out_dim:],transpose_a=True)-tf.eye(out_dim,dtype = x.dtype)
+    ortho1 = (1/tf.cast(out_dim*2,x.dtype))*tf.linalg.trace(tf.linalg.matmul(E1,E1))
+    
+    return self.l_o*(ortho1)
+  
+  def get_config(self):
+    mdict = {'l_o': self.l_o}
+    return mdict
+
+class SumUnit(Constraint):
+	def __init__(self,**kwargs):
+		super(SumUnit,self).__init__(**kwargs)
+	def __call__(self,w):
+		den = tf.reduce_sum(w)
+		return w/den
+	def get_config(self):
+		return {}
+
+
+
+
+
 #%% GRFF
 pi = constant(np.pi)
 def compute_Normal_pdf(x,mean = 0,std = 1):
