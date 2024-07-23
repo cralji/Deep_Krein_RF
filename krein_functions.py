@@ -215,19 +215,23 @@ class initializer_GRFF(Initializer):
 #%% Layer Krein
 from tensorflow.keras.layers import Layer
 
-class Krein_mapping(Layer):
+class KreinMapping(Layer):
 
   def __init__(self, 
                out_dim,
                scale = None,
-               kernel_regularizer = None,
+              #  kernel_regularizer = None,
+               factor_reg = 0.01,
                trainable_scale = False,
+               trainable = False,
                **kwargs):
     super(Krein_mapping,self).__init__(**kwargs)
     self.out_dim = out_dim
     self.scale = scale
-    self.kernel_regularizer = kernel_regularizer
+    # self.kernel_regularizer = kernel_regularizer
+    self.factor_reg = factor_reg
     self.trainable_scale = trainable_scale
+    self.trainable = trainable
 
   def build(self,input_shape):
     input_dim = input_shape[-1]
@@ -251,11 +255,21 @@ class Krein_mapping(Layer):
     else:
       raise ValueError('scale para')
     
+    if self.kernel_regularizer is None:
+      # self.kernel_regularizer = OrthogonalRegularizer(factor = self.factor_reg,
+      #                                                 mode = 'columns'
+      #                                                 )
+      self.kernel_regularizer = Orthogonal(l_o=self.factor_reg)
+    
     W,pos,neg = GRFF(int(input_shape[-1]),
                      int(self.out_dim*2),
                      sigmas=[self.scale1,self.scale2],
                      dtype = tf.float32)
-    self.kernel = tf.Variable(W,trainable=False,dtype=tf.float32)
+    self.kernel = tf.Variable(W,
+                              regularizer = self.kernel_regularizer,
+                              trainable=self.trainable,
+                              dtype=tf.float32
+                              )
     self.pos = pos
     self.neg = neg
     # self.kernel = self.add_weight("kernel",
@@ -297,6 +311,7 @@ class Krein_mapping(Layer):
              'scale':self.scale,
              'regularizer':kernel_regularizer,
              'trainable_scale':self.trainable_scale
+             'trainable' :self.trainable
              }
     base_config.update(mdict)
     return base_config
