@@ -40,4 +40,11 @@ class DiceCoefficient(Metric):
         self.intersection.assign(0)
         self.union.assign(0)
 
+# class gm_dice(Metric):
+#   def __init__(self,targets= None):
+#     self.targets = targets
+  
+#   def 
+
+
 
