@@ -81,8 +81,8 @@ class WeightedDiceLoss(Loss):
         eps = 1e-6
 
         # Reducir las dimensiones excepto las clases para calcular la intersección y la unión
-        intersection = reduce_sum(y_true * y_pred, axis=[0, 1, 2])
-        union = reduce_sum(y_true + y_pred, axis=[0, 1, 2])
+        intersection = ma.reduce_sum(y_true * y_pred, axis=[0, 1, 2])
+        union = ma.reduce_sum(y_true + y_pred, axis=[0, 1, 2])
 
         # Calcular el coeficiente de Dice por clase
         dice_score = (2. * intersection + epsilon()) / (union + epsilon())
@@ -92,7 +92,7 @@ class WeightedDiceLoss(Loss):
             dice_score = self.weights * dice_score
 
         # Calcular la pérdida de Dice como 1 menos la media ponderada de los scores de Dice
-        return 1 - reduce_mean(dice_score)
+        return 1 - ma.reduce_mean(dice_score)
         
 
         
