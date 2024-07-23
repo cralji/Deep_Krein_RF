@@ -4,7 +4,7 @@ from tensorflow.keras import backend as BK
 
 import tensorflow.linalg as lia
 import tensorflow.math as ma
-from tensorflow import clip_by_value,reshape,constant
+from tensorflow import clip_by_value,reshape,constant,float32
 #%% Losses
 # Dual Focal Loss Segmentation
 
@@ -74,7 +74,7 @@ class overall_loss(Loss):
 class WeightedDiceLoss(Loss):
     def __init__(self, weights=None, name='weighted_dice_loss'):
         super(WeightedDiceLoss, self).__init__(name=name)
-        self.weights = constant(weights, dtype=tf.float32) if weights is not None else None
+        self.weights = constant(weights, dtype=float32) if weights is not None else None
 
     def call(self, y_true, y_pred):
         # Asegurar que y_pred esté en forma de probabilidad (por ejemplo, usando softmax)
