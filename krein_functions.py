@@ -310,7 +310,7 @@ class KreinMapping(Layer):
              'out_dim':self.out_dim,
              'scale':self.scale,
              'regularizer':kernel_regularizer,
-             'trainable_scale':self.trainable_scale
+             'trainable_scale':self.trainable_scale,
              'trainable' :self.trainable
              }
     base_config.update(mdict)
