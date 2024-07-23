@@ -4,7 +4,7 @@ from tensorflow.keras import backend as BK
 
 import tensorflow.linalg as lia
 import tensorflow.math as ma
-from tensorflow import clip_by_value,reshape
+from tensorflow import clip_by_value,reshape,constant
 #%% Losses
 # Dual Focal Loss Segmentation
 
@@ -74,13 +74,13 @@ class overall_loss(Loss):
 class WeightedDiceLoss(Loss):
     def __init__(self, weights=None, name='weighted_dice_loss'):
         super(WeightedDiceLoss, self).__init__(name=name)
-        self.weights = tf.constant(weights, dtype=tf.float32) if weights is not None else None
+        self.weights = constant(weights, dtype=tf.float32) if weights is not None else None
 
     def call(self, y_true, y_pred):
         # Asegurar que y_pred esté en forma de probabilidad (por ejemplo, usando softmax)
         # y_pred = tf.nn.softmax(y_pred, axis=-1)
         # eps = 1e-6
-
+        y_pred = clip_by_value(y_pred,BK.epsilon(),1 + BK.epsilon())
         # Reducir las dimensiones excepto las clases para calcular la intersección y la unión
         intersection = ma.reduce_sum(y_true * y_pred, axis=[0, 1, 2])
         union = ma.reduce_sum(y_true + y_pred, axis=[0, 1, 2])
