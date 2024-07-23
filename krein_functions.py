@@ -322,7 +322,9 @@ class KreinMapping(Layer):
 
 #%% Krein Layers
 class KreinMapping_v2(Layer):
-
+  """
+  Version desde dos mapeos RFF.
+  """
   def __init__(self, 
                out_dim,
                scale = None,
@@ -331,7 +333,7 @@ class KreinMapping_v2(Layer):
                trainable = False,
                factor_reg = 0.01,
                **kwargs):
-    super(KreinMapping,self).__init__(**kwargs)
+    super(KreinMapping_v2,self).__init__(**kwargs)
     self.out_dim = out_dim
     self.scale = scale
     self.kernel_regularizer = kernel_regularizer
@@ -384,7 +386,7 @@ class KreinMapping_v2(Layer):
     #                               initializer = tf.constant_initializer(0.5),
     #                               trainable = self.trainable_scale,
     #                               constraint = SumUnit())
-    super(KreinMapping,self).build(input_shape)
+    super(KreinMapping_v2,self).build(input_shape)
   def call(self,inputs):
     kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
     kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
