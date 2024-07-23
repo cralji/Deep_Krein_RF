@@ -220,7 +220,7 @@ class KreinMapping(Layer):
   def __init__(self, 
                out_dim,
                scale = None,
-              #  kernel_regularizer = None,
+               kernel_regularizer = None,
                factor_reg = 0.01,
                trainable_scale = False,
                trainable = False,
@@ -228,7 +228,7 @@ class KreinMapping(Layer):
     super(KreinMapping,self).__init__(**kwargs)
     self.out_dim = out_dim
     self.scale = scale
-    # self.kernel_regularizer = kernel_regularizer
+    self.kernel_regularizer = kernel_regularizer
     self.factor_reg = factor_reg
     self.trainable_scale = trainable_scale
     self.trainable = trainable
