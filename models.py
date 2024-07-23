@@ -1,5 +1,5 @@
 #%% Import libraries
-from krein_functions import KreinMapping,Orthogonal
+from krein_functions import KreinMapping,KreinMapping_v2,Orthogonal
 # from krein_functions import KreinMapping,Orthogonal,OrthogonalRegularizer
 from tensorflow.keras import backend as bk
 from tensorflow.keras import layers as la
@@ -160,7 +160,7 @@ def krein_rff_unet(input_shape,
     p4 = la.MaxPooling2D(pool_size=(2, 2)) (c4)
     # %Bottleneck
     flatten = la.Flatten()(p4)
-    rff_krein = KreinMapping(out_dim=int(input_shape[0]/16)*int(input_shape[1]/16)*phi_units,
+    rff_krein = KreinMapping_v2(out_dim=int(input_shape[0]/16)*int(input_shape[1]/16)*phi_units,
                              trainable = trainable,
                              trainable_scale = trainable_scale,
                              factor_reg = factor_reg,

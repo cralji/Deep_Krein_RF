@@ -315,3 +315,96 @@ class KreinMapping(Layer):
              }
     base_config.update(mdict)
     return base_config
+
+
+
+#%% 
+
+#%% Krein Layers
+class KreinMapping_v2(Layer):
+
+  def __init__(self, 
+               out_dim,
+               scale = None,
+               kernel_regularizer = None,
+               trainable_scale = False,
+               trainable = False,
+               factor_reg = 0.01,
+               **kwargs):
+    super(KreinMapping,self).__init__(**kwargs)
+    self.out_dim = out_dim
+    self.scale = scale
+    self.kernel_regularizer = kernel_regularizer
+    self.trainable_scale = trainable_scale
+    self.trainable = trainable
+    self.factor_reg = factor_reg
+
+  def build(self,input_shape):
+    input_dim = input_shape[-1]
+    if self.scale is None:
+      self.scale1 = np.sqrt(input_dim / 2.0)
+      self.scale2 = np.sqrt(input_dim / 2.0)
+    elif type(self.scale) is tuple:
+      if len(self.scale) == 2:
+        self.scale1 = self.scale[0]
+        self.scale2 = self.scale[1]
+      else:
+        self.scale1 = np.sqrt(input_dim / 2.0)
+        self.scale2 = np.sqrt(input_dim / 2.0)
+    else:
+      raise ValueError('scale para')
+    if self.kernel_regularizer is None:
+      # self.kernel_regularizer = OrthogonalRegularizer(factor = self.factor_reg,
+      #                                                 mode = 'columns'
+      #                                                 )
+      self.kernel_regularizer = Orthogonal(l_o=self.factor_reg)
+    self.kernel = self.add_weight("kernel",
+                                  shape=[int(input_shape[-1]),
+                                         int(self.out_dim*2)],
+                                  regularizer = self.kernel_regularizer,
+                                  initializer = RandomNormal(stddev=1.0),
+                                  trainable = self.trainable)
+    self.kernel_scale1 = self.add_weight(
+        name='kernel_scale1',
+        shape=(1,),
+        dtype=tf.float32,
+        initializer=tf.constant_initializer(self.scale1),
+        trainable = self.trainable_scale,
+        constraint='NonNeg')
+    self.kernel_scale2 = self.add_weight(
+        name='kernel_scale2',
+        shape=(1,),
+        dtype=tf.float32,
+        initializer=tf.constant_initializer(self.scale2),
+        trainable = self.trainable_scale,
+        constraint='NonNeg')
+    # self.masses = self.add_weight(name = 'masses',
+    #                               shape = (2,),
+    #                               dtype = tf.float32,
+    #                               initializer = tf.constant_initializer(0.5),
+    #                               trainable = self.trainable_scale,
+    #                               constraint = SumUnit())
+    super(KreinMapping,self).build(input_shape)
+  def call(self,inputs):
+    kernel1 = (1.0 / self.kernel_scale1) * self.kernel[:,:self.out_dim]
+    kernel2 = (1.0 / self.kernel_scale2) * self.kernel[:,self.out_dim:]
+    outputs1 = tf.matmul(a=inputs, b=kernel1)
+    outputs2 = tf.matmul(a=inputs, b=kernel2)
+    # return tf.math.subtract(self.masses[0]*tf.cos(outputs1),self.masses[1]*tf.cos(outputs2))
+    return tf.math.subtract(tf.cos(outputs1),tf.cos(outputs2))
+    
+
+  def compute_output_shape(self, batch_input_shape):
+    return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.out_dim*2])
+
+  def get_config(self):
+    base_config = super().get_config()
+    kernel_regularizer = tf.keras.regularizers.serialize(self.kernel_regularizer)
+    mdict = {**base_config,
+             'out_dim':self.out_dim,
+             'scale':self.scale,
+             'regularizer':kernel_regularizer,
+             'trainable_scale':self.trainable_scale
+             }
+    base_config.update(mdict)
+    return base_config
