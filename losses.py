@@ -1,6 +1,7 @@
 #%% Libraries
 from tensorflow.keras.losses import Loss,CategoricalCrossentropy
 from tensorflow.keras import backend as BK
+
 import tensorflow.linalg as lia
 import tensorflow.math as ma
 from tensorflow import clip_by_value,reshape
@@ -78,14 +79,14 @@ class WeightedDiceLoss(Loss):
     def call(self, y_true, y_pred):
         # Asegurar que y_pred esté en forma de probabilidad (por ejemplo, usando softmax)
         # y_pred = tf.nn.softmax(y_pred, axis=-1)
-        eps = 1e-6
+        # eps = 1e-6
 
         # Reducir las dimensiones excepto las clases para calcular la intersección y la unión
         intersection = ma.reduce_sum(y_true * y_pred, axis=[0, 1, 2])
         union = ma.reduce_sum(y_true + y_pred, axis=[0, 1, 2])
 
         # Calcular el coeficiente de Dice por clase
-        dice_score = (2. * intersection + epsilon()) / (union + epsilon())
+        dice_score = (2. * intersection + BK.epsilon()) / (union + BK.epsilon())
 
         # Aplicar ponderaciones si están presentes
         if self.weights is not None:
