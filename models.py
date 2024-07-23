@@ -1,5 +1,5 @@
 #%% Import libraries
-from content.Deep_Krein_RF.krein_functions import KreinMapping,Orthogonal
+from krein_functions import KreinMapping,Orthogonal
 # from krein_functions import KreinMapping,Orthogonal,OrthogonalRegularizer
 from tensorflow.keras import backend as bk
 from tensorflow.keras import layers as la
