@@ -236,22 +236,22 @@ class KreinMapping(Layer):
   def build(self,input_shape):
     input_dim = input_shape[-1]
     if self.scale is None:
-      self.scale1 = np.sqrt(input_dim / 2.0)
-      self.scale2 = np.sqrt(input_dim / 2.0)
+      self.scale1 = np.sqrt(input_dim / 2.0) + 0.01
+      self.scale2 = np.sqrt(input_dim / 2.0) + 0.005
     elif (type(self.scale) is tuple):
       if len(self.scale) == 2:
         self.scale1 = self.scale[0]
         self.scale2 = self.scale[1]
       else:
-        self.scale1 = np.sqrt(input_dim / 2.0)
-        self.scale2 = np.sqrt(input_dim / 2.0)
+        self.scale1 = np.sqrt(input_dim / 2.0) + 0.01
+        self.scale2 = np.sqrt(input_dim / 2.0) + 0.005
     elif type(self.scale) is list:
       if len(self.scale) == 2:
         self.scale1 = self.scale[0]
         self.scale2 = self.scale[1]
       else:
-        self.scale1 = np.sqrt(input_dim / 2.0)
-        self.scale2 = np.sqrt(input_dim / 2.0)
+        self.scale1 = np.sqrt(input_dim / 2.0) + 0.01
+        self.scale2 = np.sqrt(input_dim / 2.0) + 0.005
     else:
       raise ValueError('scale para')
     

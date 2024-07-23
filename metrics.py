@@ -13,7 +13,7 @@ class DiceCoefficient(Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         # Asegurarse de que las predicciones son binarias (en caso de que y_pred no esté en formato one-hot)
         # y_pred = tf.cast(tf.argmax(y_pred, axis=-1), tf.int32)
-
+        
         if self.target_class is not None:
             # Filtrar por clase específica
             y_true = cast(y_true[..., self.target_class], float32)
